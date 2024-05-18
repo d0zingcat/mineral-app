@@ -13,17 +13,20 @@ check_command() {
     fi
 }
 
-check_command pm2
-if [ ! $? -eq 0 ]
-then  
-    exit 1
-fi
-check_command bun
-if [ ! $? -eq 0 ]
-then  
-    exit 1
-fi
+check_req() {
+    check_command pm2
+    if [ ! $? -eq 0 ]
+    then  
+        exit 1
+    fi
+    check_command bun
+    if [ ! $? -eq 0 ]
+    then  
+        exit 1
+    fi
+}
 
+check_req
 read -p 'Key file name(default for pk.key): ' key_file
 key_file=${key_file:-pk.key}
 read -p 'Enter what you want to: ' action
@@ -46,7 +49,7 @@ case $action in
         if [ -f "$key_file" ]; then
             while IFS= read -r sui_key; do
                 # as \t is not that compatible for all shells, the IFS should be $'\t', but we could use simplest one, a space
-                IFS= read -r private public <<< "$sui_key"
+                IFS=' ' read -r private public <<< "$sui_key"
             echo 'start:' $public
                 # echo ${sui_key:0:16}
                 WALLET=$private pm2 start --name ${public} "bun run src/cli/index.ts -- mine"
