@@ -39,13 +39,14 @@ case $action in
             result=$(bun src/cli/index.ts create-wallet); 
             private=$(echo $result | grep Priv | cut -d ' ' -f 3); 
             public=$(echo $result| grep Wallet | cut -d ' ' -f 3); 
-            echo -n "$i:\t"; echo "$private\t$public" | tee -a $key_file; 
+            echo -n "$i:\t"; echo "$private $public" | tee -a $key_file; 
         done
         ;;
     start)
         if [ -f "$key_file" ]; then
             while IFS= read -r sui_key; do
-                IFS=$'\t' read -r private public <<< "$sui_key"
+                # as \t is not that compatible for all shells, the IFS should be $'\t', but we could use simplest one, a space
+                IFS= read -r private public <<< "$sui_key"
             echo 'start:' $public
                 # echo ${sui_key:0:16}
                 WALLET=$private pm2 start --name ${public} "bun run src/cli/index.ts -- mine"
